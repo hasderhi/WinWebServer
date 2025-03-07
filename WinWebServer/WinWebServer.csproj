@@ -35,6 +35,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="errors\403.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="errors\404.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

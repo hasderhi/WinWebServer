@@ -49,19 +49,30 @@
             lblInfoCertPW = new Label();
             lblInfoCertPath = new Label();
             panel3 = new Panel();
+            btnExportLog = new Button();
             lstLogs = new ListBox();
             lblPanelDesc3 = new Label();
-            panel4 = new Panel();
-            lblPanelInfoUserView = new Label();
-            lstConnectedUsers = new ListView();
-            ipAddress = new ColumnHeader();
-            requestedPage = new ColumnHeader();
-            timeStamp = new ColumnHeader();
             cleanupTimer = new System.Windows.Forms.Timer(components);
+            panel5 = new Panel();
+            lblInfoPanelDescWL = new Label();
+            btnRemoveIP = new Button();
+            chkEnableWhitelist = new CheckBox();
+            btnAddIP = new Button();
+            txtWhitelistIP = new TextBox();
+            lstWhitelist = new ListBox();
+            saveFileDialog1 = new SaveFileDialog();
+            lstBlacklist = new ListBox();
+            txtBlacklistIP = new TextBox();
+            btnAddBlacklistIP = new Button();
+            chkEnableBlacklist = new CheckBox();
+            btnRemoveBlacklistIP = new Button();
+            lblPanelBL = new Label();
+            panel6 = new Panel();
             panel1.SuspendLayout();
             panel2.SuspendLayout();
             panel3.SuspendLayout();
-            panel4.SuspendLayout();
+            panel5.SuspendLayout();
+            panel6.SuspendLayout();
             SuspendLayout();
             // 
             // lblStatus
@@ -261,20 +272,31 @@
             // panel3
             // 
             panel3.BackColor = SystemColors.ControlLightLight;
+            panel3.Controls.Add(btnExportLog);
             panel3.Controls.Add(lstLogs);
             panel3.Controls.Add(lblPanelDesc3);
             panel3.Location = new Point(372, 59);
             panel3.Name = "panel3";
-            panel3.Size = new Size(389, 496);
+            panel3.Size = new Size(389, 334);
             panel3.TabIndex = 14;
+            // 
+            // btnExportLog
+            // 
+            btnExportLog.Location = new Point(311, 3);
+            btnExportLog.Name = "btnExportLog";
+            btnExportLog.Size = new Size(75, 23);
+            btnExportLog.TabIndex = 14;
+            btnExportLog.Text = "Export";
+            btnExportLog.UseVisualStyleBackColor = true;
+            btnExportLog.Click += btnExportLog_Click;
             // 
             // lstLogs
             // 
             lstLogs.FormattingEnabled = true;
             lstLogs.HorizontalScrollbar = true;
-            lstLogs.Location = new Point(0, 27);
+            lstLogs.Location = new Point(1, 30);
             lstLogs.Name = "lstLogs";
-            lstLogs.Size = new Size(389, 469);
+            lstLogs.Size = new Size(387, 304);
             lstLogs.TabIndex = 13;
             // 
             // lblPanelDesc3
@@ -287,61 +309,157 @@
             lblPanelDesc3.Text = "Logs";
             lblPanelDesc3.TextAlign = ContentAlignment.MiddleLeft;
             // 
-            // panel4
-            // 
-            panel4.BackColor = SystemColors.ControlLightLight;
-            panel4.Controls.Add(lblPanelInfoUserView);
-            panel4.Controls.Add(lstConnectedUsers);
-            panel4.Location = new Point(17, 399);
-            panel4.Name = "panel4";
-            panel4.Size = new Size(337, 156);
-            panel4.TabIndex = 15;
-            // 
-            // lblPanelInfoUserView
-            // 
-            lblPanelInfoUserView.Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblPanelInfoUserView.Location = new Point(0, 0);
-            lblPanelInfoUserView.Name = "lblPanelInfoUserView";
-            lblPanelInfoUserView.Size = new Size(128, 23);
-            lblPanelInfoUserView.TabIndex = 12;
-            lblPanelInfoUserView.Text = "Connected Users";
-            lblPanelInfoUserView.TextAlign = ContentAlignment.MiddleLeft;
-            // 
-            // lstConnectedUsers
-            // 
-            lstConnectedUsers.Columns.AddRange(new ColumnHeader[] { ipAddress, requestedPage, timeStamp });
-            lstConnectedUsers.Location = new Point(0, 26);
-            lstConnectedUsers.Name = "lstConnectedUsers";
-            lstConnectedUsers.Size = new Size(337, 130);
-            lstConnectedUsers.TabIndex = 0;
-            lstConnectedUsers.UseCompatibleStateImageBehavior = false;
-            lstConnectedUsers.View = View.Details;
-            // 
-            // ipAddress
-            // 
-            ipAddress.Text = "IP Address";
-            ipAddress.Width = 100;
-            // 
-            // requestedPage
-            // 
-            requestedPage.Text = "Requested Page";
-            requestedPage.Width = 140;
-            // 
-            // timeStamp
-            // 
-            timeStamp.Text = "Time";
-            timeStamp.Width = 90;
-            // 
             // cleanupTimer
             // 
             cleanupTimer.Interval = 60000;
+            // 
+            // panel5
+            // 
+            panel5.BackColor = SystemColors.ControlLightLight;
+            panel5.Controls.Add(lblInfoPanelDescWL);
+            panel5.Controls.Add(btnRemoveIP);
+            panel5.Controls.Add(chkEnableWhitelist);
+            panel5.Controls.Add(btnAddIP);
+            panel5.Controls.Add(txtWhitelistIP);
+            panel5.Controls.Add(lstWhitelist);
+            panel5.Location = new Point(373, 399);
+            panel5.Name = "panel5";
+            panel5.Size = new Size(388, 173);
+            panel5.TabIndex = 16;
+            // 
+            // lblInfoPanelDescWL
+            // 
+            lblInfoPanelDescWL.Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            lblInfoPanelDescWL.Location = new Point(1, 0);
+            lblInfoPanelDescWL.Name = "lblInfoPanelDescWL";
+            lblInfoPanelDescWL.Size = new Size(67, 23);
+            lblInfoPanelDescWL.TabIndex = 15;
+            lblInfoPanelDescWL.Text = "Whitelist";
+            lblInfoPanelDescWL.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // btnRemoveIP
+            // 
+            btnRemoveIP.Location = new Point(224, 149);
+            btnRemoveIP.Name = "btnRemoveIP";
+            btnRemoveIP.Size = new Size(75, 23);
+            btnRemoveIP.TabIndex = 4;
+            btnRemoveIP.Text = "Remove IP";
+            btnRemoveIP.UseVisualStyleBackColor = true;
+            btnRemoveIP.Click += btnRemoveIP_Click;
+            // 
+            // chkEnableWhitelist
+            // 
+            chkEnableWhitelist.AutoSize = true;
+            chkEnableWhitelist.Location = new Point(279, 126);
+            chkEnableWhitelist.Name = "chkEnableWhitelist";
+            chkEnableWhitelist.Size = new Size(110, 19);
+            chkEnableWhitelist.TabIndex = 3;
+            chkEnableWhitelist.Text = "Enable Whitelist";
+            chkEnableWhitelist.UseVisualStyleBackColor = true;
+            chkEnableWhitelist.CheckedChanged += chkEnableWhitelist_CheckedChanged;
+            // 
+            // btnAddIP
+            // 
+            btnAddIP.Location = new Point(305, 149);
+            btnAddIP.Name = "btnAddIP";
+            btnAddIP.Size = new Size(80, 23);
+            btnAddIP.TabIndex = 2;
+            btnAddIP.Text = "Add IP";
+            btnAddIP.UseVisualStyleBackColor = true;
+            btnAddIP.Click += btnAddIP_Click;
+            // 
+            // txtWhitelistIP
+            // 
+            txtWhitelistIP.Location = new Point(1, 147);
+            txtWhitelistIP.Name = "txtWhitelistIP";
+            txtWhitelistIP.Size = new Size(217, 23);
+            txtWhitelistIP.TabIndex = 1;
+            // 
+            // lstWhitelist
+            // 
+            lstWhitelist.FormattingEnabled = true;
+            lstWhitelist.Location = new Point(1, 26);
+            lstWhitelist.Name = "lstWhitelist";
+            lstWhitelist.Size = new Size(387, 94);
+            lstWhitelist.TabIndex = 0;
+            // 
+            // lstBlacklist
+            // 
+            lstBlacklist.FormattingEnabled = true;
+            lstBlacklist.Location = new Point(1, 26);
+            lstBlacklist.Name = "lstBlacklist";
+            lstBlacklist.Size = new Size(333, 94);
+            lstBlacklist.TabIndex = 0;
+            // 
+            // txtBlacklistIP
+            // 
+            txtBlacklistIP.Location = new Point(1, 147);
+            txtBlacklistIP.Name = "txtBlacklistIP";
+            txtBlacklistIP.Size = new Size(166, 23);
+            txtBlacklistIP.TabIndex = 1;
+            // 
+            // btnAddBlacklistIP
+            // 
+            btnAddBlacklistIP.Location = new Point(254, 147);
+            btnAddBlacklistIP.Name = "btnAddBlacklistIP";
+            btnAddBlacklistIP.Size = new Size(80, 23);
+            btnAddBlacklistIP.TabIndex = 2;
+            btnAddBlacklistIP.Text = "Add IP";
+            btnAddBlacklistIP.UseVisualStyleBackColor = true;
+            btnAddBlacklistIP.Click += btnAddBlacklistIP_Click;
+            // 
+            // chkEnableBlacklist
+            // 
+            chkEnableBlacklist.AutoSize = true;
+            chkEnableBlacklist.Location = new Point(230, 126);
+            chkEnableBlacklist.Name = "chkEnableBlacklist";
+            chkEnableBlacklist.Size = new Size(107, 19);
+            chkEnableBlacklist.TabIndex = 3;
+            chkEnableBlacklist.Text = "Enable Blacklist";
+            chkEnableBlacklist.UseVisualStyleBackColor = true;
+            chkEnableBlacklist.CheckedChanged += chkEnableBlacklist_CheckedChanged;
+            // 
+            // btnRemoveBlacklistIP
+            // 
+            btnRemoveBlacklistIP.Location = new Point(173, 147);
+            btnRemoveBlacklistIP.Name = "btnRemoveBlacklistIP";
+            btnRemoveBlacklistIP.Size = new Size(75, 23);
+            btnRemoveBlacklistIP.TabIndex = 4;
+            btnRemoveBlacklistIP.Text = "Remove IP";
+            btnRemoveBlacklistIP.UseVisualStyleBackColor = true;
+            btnRemoveBlacklistIP.Click += btnRemoveBlacklistIP_Click;
+            // 
+            // lblPanelBL
+            // 
+            lblPanelBL.Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            lblPanelBL.Location = new Point(0, 0);
+            lblPanelBL.Name = "lblPanelBL";
+            lblPanelBL.Size = new Size(63, 23);
+            lblPanelBL.TabIndex = 14;
+            lblPanelBL.Text = "Blacklist";
+            lblPanelBL.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // panel6
+            // 
+            panel6.BackColor = SystemColors.ControlLightLight;
+            panel6.Controls.Add(lblPanelBL);
+            panel6.Controls.Add(btnRemoveBlacklistIP);
+            panel6.Controls.Add(chkEnableBlacklist);
+            panel6.Controls.Add(btnAddBlacklistIP);
+            panel6.Controls.Add(txtBlacklistIP);
+            panel6.Controls.Add(lstBlacklist);
+            panel6.Location = new Point(17, 399);
+            panel6.Name = "panel6";
+            panel6.Size = new Size(337, 173);
+            panel6.TabIndex = 17;
             // 
             // WinWebServer
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(772, 560);
-            Controls.Add(panel4);
+            ClientSize = new Size(772, 583);
+            Controls.Add(panel6);
+            Controls.Add(panel5);
             Controls.Add(panel3);
             Controls.Add(panel2);
             Controls.Add(panel1);
@@ -355,7 +473,10 @@
             panel2.ResumeLayout(false);
             panel2.PerformLayout();
             panel3.ResumeLayout(false);
-            panel4.ResumeLayout(false);
+            panel5.ResumeLayout(false);
+            panel5.PerformLayout();
+            panel6.ResumeLayout(false);
+            panel6.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -383,12 +504,22 @@
         private Label lblPanelDesc2;
         private Label lblPanelDesc3;
         private ListBox lstLogs;
-        private Panel panel4;
-        private Label lblPanelInfoUserView;
-        private ListView lstConnectedUsers;
-        private ColumnHeader ipAddress;
-        private ColumnHeader requestedPage;
-        private ColumnHeader timeStamp;
         private System.Windows.Forms.Timer cleanupTimer;
+        private Panel panel5;
+        private TextBox txtWhitelistIP;
+        private ListBox lstWhitelist;
+        private CheckBox chkEnableWhitelist;
+        private Button btnAddIP;
+        private Button btnRemoveIP;
+        private Label lblInfoPanelDescWL;
+        private Button btnExportLog;
+        private SaveFileDialog saveFileDialog1;
+        private ListBox lstBlacklist;
+        private TextBox txtBlacklistIP;
+        private Button btnAddBlacklistIP;
+        private CheckBox chkEnableBlacklist;
+        private Button btnRemoveBlacklistIP;
+        private Label lblPanelBL;
+        private Panel panel6;
     }
 }

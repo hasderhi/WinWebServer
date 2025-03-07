@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using System;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System.Net.Mime;
 
 
 namespace WinWebServer
@@ -27,9 +28,7 @@ namespace WinWebServer
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            cleanupTimer.Interval = 60000; // 1x/1min
-            cleanupTimer.Tick += CleanupOldConnections;
-            cleanupTimer.Start();
+            Log($"[INFO] Control Panel started successfully");
         }
 
         private async void btnStart_Click(object sender, EventArgs e)
@@ -55,11 +54,11 @@ namespace WinWebServer
                         {
                             listenOptions.UseHttps(certPath, certPassword);
                         });
-                        Log($"Using SSL certificate: {certPath}");
+                        Log($"[INFO] Using SSL certificate: {certPath}");
                     }
                     catch (Exception ex)
                     {
-                        Log($"Error loading certificate: {ex.Message}");
+                        Log($"[ERROR] Error loading certificate: {ex.Message}");
                         MessageBox.Show("Invalid SSL certificate or password!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
@@ -71,42 +70,61 @@ namespace WinWebServer
 
             webHost.UseStaticFiles();
             webHost.UseRouting();
+#pragma warning disable ASP0014
             webHost.UseEndpoints(endpoints =>
             {
                 endpoints.MapGet("/{**path}", async context =>
                 {
-                    string requestedPath = context.Request.Path.ToString().Trim('/');
-                    string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                     string clientIp = context.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
-                    string wwwrootPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot");
-                    string filePath = Path.Combine(wwwrootPath, requestedPath);
+                    string requestedPath = context.Request.Path.ToString();
+                    string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                    string errorForbiddenPagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "errors", "403.html");
 
-                    // Log connection
-                    if (lstConnectedUsers.InvokeRequired)
+                    if (chkEnableBlacklist.Checked && ipBlacklist.Contains(clientIp))
                     {
-                        lstConnectedUsers.Invoke(new Action(() => AddUserToList(clientIp, requestedPath, timestamp)));
-                    }
-                    else
-                    {
-                        AddUserToList(clientIp, requestedPath, timestamp);
-                    }
-
-                    Log($"Client {clientIp} requested '{requestedPath}'");
-
-                    if (Directory.Exists(filePath))
-                    {
-                        // If dir accessed, check for index.html
-                        string indexPath = Path.Combine(filePath, "index.html");
-                        if (File.Exists(indexPath))
+                        Log($"[WARN] [403] Blocked access from blacklisted IP {clientIp}");
+                        if (File.Exists(errorForbiddenPagePath))
                         {
-                            context.Response.Redirect($"{requestedPath}/index.html");
-                            return;
+                            context.Response.ContentType = "text/html";
+                            await context.Response.SendFileAsync(errorForbiddenPagePath);
                         }
-
-                        // If no index.html >>> Generate dir listing
-                        await GenerateDirectoryListing(context, filePath, requestedPath);
+                        else
+                        {
+                            context.Response.StatusCode = 403;
+                            await context.Response.WriteAsync("403 - Forbidden: Your IP is banned.");
+                        }
                         return;
                     }
+
+
+
+                    if (chkEnableWhitelist.Checked && !ipWhitelist.Contains(clientIp))
+                    {
+                        Log($"[WARN] [403] Unauthorized access attempt from {clientIp}");
+
+                        if (File.Exists(errorForbiddenPagePath))
+                        {
+                            context.Response.ContentType = "text/html";
+                            await context.Response.SendFileAsync(errorForbiddenPagePath);
+                        }
+                        else
+                        {
+                            context.Response.StatusCode = 403;
+                            await context.Response.WriteAsync("403 - Forbidden: Your IP is not allowed.");
+                        }
+                        return;
+                    }
+
+                    if (string.IsNullOrEmpty(requestedPath) || requestedPath == "/")
+                        requestedPath = "index.html";
+
+                    string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", requestedPath);
+
+
+
+
+
+                    Log($"[INFO] Client {clientIp} requested '{requestedPath}'");
 
                     if (File.Exists(filePath))
                     {
@@ -117,7 +135,6 @@ namespace WinWebServer
                     else
                     {
                         string errorPagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "errors", "404.html");
-
                         if (File.Exists(errorPagePath))
                         {
                             context.Response.ContentType = "text/html";
@@ -128,47 +145,22 @@ namespace WinWebServer
                             context.Response.StatusCode = 404;
                             await context.Response.WriteAsync("404 - Page Not Found");
                         }
-
-                        Log($"[404] {clientIp} requested '{requestedPath}' - Not Found");
+                        Log($"[ERROR] [404] {clientIp} requested '{requestedPath}' - Not Found");
                     }
                 });
+
             });
+#pragma warning restore ASP0014
 
             _ = Task.Run(() => webHost.RunAsync());
 
             btnStart.Enabled = false;
             btnStop.Enabled = true;
             lblStatus.Text = $"Server Status: Running on {host}";
-            Log($"Server started on {host}");
+            Log($"[INFO] Server started on {host}");
         }
 
-        private async Task GenerateDirectoryListing(HttpContext context, string directoryPath, string relativePath)
-        {
-            string[] files = Directory.GetFiles(directoryPath);
-            string[] directories = Directory.GetDirectories(directoryPath);
-
-            context.Response.ContentType = "text/html";
-            await context.Response.WriteAsync("<html><head><title>Directory Listing</title>");
-            await context.Response.WriteAsync("<style>body { font-family: Arial; } a { display: block; margin: 5px; }</style>");
-            await context.Response.WriteAsync("</head><body>");
-            await context.Response.WriteAsync($"<h2>Directory Listing: /{relativePath}</h2>");
-
-            // List dirs
-            foreach (var dir in directories)
-            {
-                string dirName = Path.GetFileName(dir);
-                await context.Response.WriteAsync($"<a href=\"/{relativePath}/{dirName}/\">📁 {dirName}/</a>");
-            }
-
-            // List files
-            foreach (var file in files)
-            {
-                string fileName = Path.GetFileName(file);
-                await context.Response.WriteAsync($"<a href=\"/{relativePath}/{fileName}\">📄 {fileName}</a>");
-            }
-
-            await context.Response.WriteAsync("</body></html>");
-        }
+       
 
 
         private string GetContentType(string filePath)
@@ -191,7 +183,7 @@ namespace WinWebServer
                 ".woff2" => "font/woff2",
                 ".ttf" => "font/ttf",
                 ".eot" => "application/vnd.ms-fontobject",
-                _ => "application/octet-stream", // Default if unknown type
+                _ => "application/octet-stream", // Default if unknown
             };
         }
 
@@ -205,7 +197,7 @@ namespace WinWebServer
                 btnStart.Enabled = true;
                 btnStop.Enabled = false;
                 lblStatus.Text = "Server Status: Stopped";
-                Log("Server stopped.");
+                Log("[INFO] Server stopped.");
             }
         }
 
@@ -228,15 +220,15 @@ namespace WinWebServer
                 return;
             }
 
-            lstLogs.Items.Insert(0, logMessage); // Newest logs at top
-            if (lstLogs.Items.Count > 100) // Keep only last 100 logs
+            lstLogs.Items.Insert(0, logMessage);
+            if (lstLogs.Items.Count > 100)
             {
                 lstLogs.Items.RemoveAt(lstLogs.Items.Count - 1);
             }
         }
 
 
-        
+
 
 
 
@@ -278,44 +270,125 @@ namespace WinWebServer
 
 
 
-        private void AddUserToList(string ip, string path, string timestamp)
+        
+
+        
+
+        private List<string> ipWhitelist = new List<string>();
+
+        private void btnAddIP_Click(object sender, EventArgs e)
         {
-            foreach (ListViewItem item in lstConnectedUsers.Items)
+            string newIP = txtWhitelistIP.Text.Trim();
+            if (!string.IsNullOrEmpty(newIP) && !ipWhitelist.Contains(newIP))
             {
-                if (item.SubItems[0].Text == ip && item.SubItems[1].Text == path)
-                    return; // Already logged
-            }
-
-            ListViewItem newItem = new ListViewItem(ip);
-            newItem.SubItems.Add(path);
-            newItem.SubItems.Add(timestamp);
-            lstConnectedUsers.Items.Insert(0, newItem); // Add to top
-
-            // Limit log size to 100 items
-            if (lstConnectedUsers.Items.Count > 100)
-            {
-                lstConnectedUsers.Items.RemoveAt(lstConnectedUsers.Items.Count - 1);
+                ipWhitelist.Add(newIP);
+                lstWhitelist.Items.Add(newIP);
+                txtWhitelistIP.Clear();
+                Log($"[INFO] Added IP to whitelist: {newIP}");
             }
         }
 
-        private void CleanupOldConnections(object sender, EventArgs e)
+        private void btnRemoveIP_Click(object sender, EventArgs e)
         {
-            DateTime now = DateTime.Now;
-            List<ListViewItem> itemsToRemove = new List<ListViewItem>();
-
-            foreach (ListViewItem item in lstConnectedUsers.Items)
+            if (lstWhitelist.SelectedItem != null)
             {
-                DateTime timestamp = DateTime.Parse(item.SubItems[2].Text);
-                if ((now - timestamp).TotalMinutes > 5) // Remove if older than 5 min
+                string selectedIP = lstWhitelist.SelectedItem.ToString();
+                ipWhitelist.Remove(selectedIP);
+                lstWhitelist.Items.Remove(selectedIP);
+                Log($"[INFO] Removed IP from whitelist: {selectedIP}");
+            }
+            else
+            {
+                MessageBox.Show("Please select an IP", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void chkEnableWhitelist_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkEnableWhitelist.Checked)
+            {
+                Log("[INFO] Enabled Whitelist");
+            }
+            else
+            {
+                Log("[INFO] Disabled Whitelist");
+            }
+        }
+
+        private List<string> ipBlacklist = new List<string>();
+
+        private void btnAddBlacklistIP_Click(object sender, EventArgs e)
+        {
+            string newIP = txtBlacklistIP.Text.Trim();
+            if (!string.IsNullOrEmpty(newIP) && !ipBlacklist.Contains(newIP))
+            {
+                ipBlacklist.Add(newIP);
+                lstBlacklist.Items.Add(newIP);
+                txtBlacklistIP.Clear();
+                Log($"[INFO] Added IP to blacklist: {newIP}");
+            }
+        }
+
+        private void btnRemoveBlacklistIP_Click(object sender, EventArgs e)
+        {
+            if (lstBlacklist.SelectedItem != null)
+            {
+                string selectedIP = lstBlacklist.SelectedItem.ToString();
+                ipBlacklist.Remove(selectedIP);
+                lstBlacklist.Items.Remove(selectedIP);
+                Log($"[INFO] Removed IP from blacklist: {selectedIP}");
+            }
+            else
+            {
+                MessageBox.Show("Please select an IP", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void chkEnableBlacklist_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkEnableBlacklist.Checked)
+            {
+                Log("[INFO] Enabled Blacklist");
+            }
+            else
+            {
+                Log("[INFO] Disabled Blacklist");
+            }
+        }
+
+        private void btnExportLog_Click(object sender, EventArgs e)
+        {
+            if (lstLogs.Items.Count == 0)
+            {
+                MessageBox.Show("There are no logs to export.", "Export Logs", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            saveFileDialog1.Filter = "Log Files (*.log)|*.log|Text Files (*.txt)|*.txt|All Files (*.*)|*.*";
+            saveFileDialog1.Title = "Save Log File";
+            saveFileDialog1.FileName = $"ServerLog_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.log";
+
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                try
                 {
-                    itemsToRemove.Add(item);
+                    using (StreamWriter writer = new StreamWriter(saveFileDialog1.FileName))
+                    {
+                        foreach (var item in lstLogs.Items)
+                        {
+                            writer.WriteLine(item.ToString());
+                        }
+                    }
+                    MessageBox.Show("Logs exported successfully!", "Export Logs", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    Log($"[INFO] Logs exported to: {saveFileDialog1.FileName}");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error saving log file:\n{ex.Message}", "Export Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Log($"[ERROR] Failed to export logs: {ex.Message}");
                 }
             }
-
-            foreach (var item in itemsToRemove)
-            {
-                lstConnectedUsers.Items.Remove(item);
-            }
         }
+
     }
 }
