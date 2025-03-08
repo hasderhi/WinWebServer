@@ -8,6 +8,8 @@ using System;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Net.Mime;
+using System.Text.Json;
+
 
 
 namespace WinWebServer
@@ -209,7 +211,48 @@ namespace WinWebServer
 
 
 
-        private void Log(string message)
+
+
+
+
+
+private Dictionary<string, string> userCredentials = new();
+
+    private void LoadUserCredentials()
+    {
+        string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "users.json");
+        if (File.Exists(filePath))
+        {
+            string json = File.ReadAllText(filePath);
+            userCredentials = JsonSerializer.Deserialize<Dictionary<string, string>>(json) ?? new();
+        }
+        else
+        {
+            userCredentials = new();
+            File.WriteAllText(filePath, JsonSerializer.Serialize(userCredentials, new JsonSerializerOptions { WriteIndented = true }));
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    private void Log(string message)
         {
             string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"); // Format: YYYY-MM-DD HH:MM:SS
             string logMessage = $"[{timestamp}] {message}";

@@ -44,6 +44,9 @@
     <None Update="media-internal\wws.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="users.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="wwwroot\about.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
