@@ -34,7 +34,7 @@ All icons used are from the [Must Have Icons](https://www.iconarchive.com/show/m
 
 ## Installation
 
-To install WinWebServer, you need to have .NET installed on your system. You can download .NET from the [official Microsoft website](https://dotnet.microsoft.com/en-us/download). After you have downloaded .NET, you can install the latest release of WinWebServer from the [GitHub repository](https://github.com/hasderhi/WinWebServer/releases). The files will contain the executable named `WinWebServer.exe`.
+To install WinWebServer, you need to have .NET installed on your system. You can download .NET from the [official Microsoft website](https://dotnet.microsoft.com/en-us/download). You can also run the .exe and you will be prompted to install .NET. After you have downloaded .NET, you can install the latest release of WinWebServer from the [GitHub repository](https://github.com/hasderhi/WinWebServer/releases). The files will contain the executable named `WinWebServer.exe`.
 
 In the repository, you will also find the source code in order to build the project yourself, which is recommended if you either want to make changes to the code or if you want to verify the integrity of the code. This could be necessary because the developer cannot verify the application because of the lack of a digital signature.
 
