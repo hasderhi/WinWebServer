@@ -42,6 +42,7 @@
             btnOpenWwwroot = new Button();
             lblTitle = new Label();
             panel1 = new Panel();
+            btnVisitPage = new Button();
             labelPanelDesc1 = new Label();
             lblInfoPort = new Label();
             panel2 = new Panel();
@@ -191,6 +192,7 @@
             // panel1
             // 
             panel1.BackColor = SystemColors.ControlLightLight;
+            panel1.Controls.Add(btnVisitPage);
             panel1.Controls.Add(labelPanelDesc1);
             panel1.Controls.Add(lblInfoPort);
             panel1.Controls.Add(lblStatus);
@@ -202,6 +204,18 @@
             panel1.Name = "panel1";
             panel1.Size = new Size(337, 160);
             panel1.TabIndex = 12;
+            // 
+            // btnVisitPage
+            // 
+            btnVisitPage.Image = (Image)resources.GetObject("btnVisitPage.Image");
+            btnVisitPage.ImageAlign = ContentAlignment.MiddleLeft;
+            btnVisitPage.Location = new Point(195, 55);
+            btnVisitPage.Name = "btnVisitPage";
+            btnVisitPage.Size = new Size(94, 23);
+            btnVisitPage.TabIndex = 12;
+            btnVisitPage.Text = "Visit";
+            btnVisitPage.UseVisualStyleBackColor = true;
+            btnVisitPage.Click += btnVisitPage_Click;
             // 
             // labelPanelDesc1
             // 
@@ -521,5 +535,6 @@
         private Button btnRemoveBlacklistIP;
         private Label lblPanelBL;
         private Panel panel6;
+        private Button btnVisitPage;
     }
 }

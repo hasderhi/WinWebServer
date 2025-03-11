@@ -35,7 +35,14 @@ namespace WinWebServer
 
         private async void btnStart_Click(object sender, EventArgs e)
         {
-            port = int.Parse(txtPort.Text);
+            try
+            {
+                port = int.Parse(txtPort.Text);
+            }
+            catch {
+                MessageBox.Show("Invalid port number!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
             isPublic = chkPublic.Checked;
             bool useHttps = chkUseHttps.Checked;
             string certPath = txtCertPath.Text;
@@ -152,6 +159,16 @@ namespace WinWebServer
                 });
 
             });
+
+
+
+
+
+
+
+
+
+
 #pragma warning restore ASP0014
 
             _ = Task.Run(() => webHost.RunAsync());
@@ -162,7 +179,7 @@ namespace WinWebServer
             Log($"[INFO] Server started on {host}");
         }
 
-       
+
 
 
         private string GetContentType(string filePath)
@@ -216,22 +233,22 @@ namespace WinWebServer
 
 
 
-private Dictionary<string, string> userCredentials = new();
+        private Dictionary<string, string> userCredentials = new();
 
-    private void LoadUserCredentials()
-    {
-        string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "users.json");
-        if (File.Exists(filePath))
+        private void LoadUserCredentials()
         {
-            string json = File.ReadAllText(filePath);
-            userCredentials = JsonSerializer.Deserialize<Dictionary<string, string>>(json) ?? new();
+            string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "users.json");
+            if (File.Exists(filePath))
+            {
+                string json = File.ReadAllText(filePath);
+                userCredentials = JsonSerializer.Deserialize<Dictionary<string, string>>(json) ?? new();
+            }
+            else
+            {
+                userCredentials = new();
+                File.WriteAllText(filePath, JsonSerializer.Serialize(userCredentials, new JsonSerializerOptions { WriteIndented = true }));
+            }
         }
-        else
-        {
-            userCredentials = new();
-            File.WriteAllText(filePath, JsonSerializer.Serialize(userCredentials, new JsonSerializerOptions { WriteIndented = true }));
-        }
-    }
 
 
 
@@ -252,7 +269,7 @@ private Dictionary<string, string> userCredentials = new();
 
 
 
-    private void Log(string message)
+        private void Log(string message)
         {
             string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"); // Format: YYYY-MM-DD HH:MM:SS
             string logMessage = $"[{timestamp}] {message}";
@@ -313,9 +330,9 @@ private Dictionary<string, string> userCredentials = new();
 
 
 
-        
 
-        
+
+
 
         private List<string> ipWhitelist = new List<string>();
 
@@ -433,5 +450,27 @@ private Dictionary<string, string> userCredentials = new();
             }
         }
 
+        private void btnVisitPage_Click(object sender, EventArgs e)
+        {
+            int port;
+            if (!int.TryParse(txtPort.Text, out port))
+            {
+                MessageBox.Show("Invalid port number!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            // Determine if HTTPS is enabled
+            string protocol = chkUseHttps.Checked ? "https" : "http";
+            string url = $"{protocol}://localhost:{port}";
+
+            try
+            {
+                Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to open browser: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
     }
 }
