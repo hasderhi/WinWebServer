@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) [2025] [Tobias Kisling ("tk_dev", "hasderhi")]
+Copyright (c) [2025] [Annabeth Kisling ("tk_dev", "hasderhi")]
 
 Coypright (c) for all icons used in the project: https://www.visualpharm.com/
 
